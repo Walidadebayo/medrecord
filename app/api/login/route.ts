@@ -1,19 +1,32 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { loginUser } from "@/lib/auth"
+import { NextRequest, NextResponse } from 'next/server';
+import { loginUser } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { username, password } = body
-
-    const user = await loginUser(username, password)
-
-    if (!user) {
-      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
+    const { username, password } = await request.json();
+    
+    if (!username || !password) {
+      return NextResponse.json(
+        { error: 'Username and password are required' },
+        { status: 400 }
+      );
     }
-
-    return NextResponse.json({ user })
+    
+    const user = await loginUser(username, password);
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Invalid credentials' },
+        { status: 401 }
+      );
+    }
+    
+    return NextResponse.json({ user });
   } catch (error) {
-    return NextResponse.json({ error: "Authentication failed" }, { status: 500 })
+    console.error('Login error:', error);
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
   }
 }

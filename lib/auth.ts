@@ -3,6 +3,7 @@ import { SignJWT, jwtVerify } from "jose";
 import type { User, Session } from "@/lib/types";
 import UserModel from "@/models/user";
 import dbConnect from "@/lib/db";
+import { createPermitUser } from "./permit";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
@@ -82,10 +83,10 @@ export async function initializeUsers() {
     await dbConnect();
 
     const count = await UserModel.countDocuments();
-
+    
     if (count === 0) {
       // Create default users
-      await UserModel.create([
+      const createdUsers = await UserModel.create([
         {
           username: "admin",
           password: "2025DEVChallenge",
@@ -122,8 +123,9 @@ export async function initializeUsers() {
           role: "patient",
         },
       ]);
-
-      console.log("Default users created");
+      // for (const user of createdUsers) {
+      //   await createUser(user);
+      // }
     }
   } catch (error) {
     console.error("Error initializing users:", error);

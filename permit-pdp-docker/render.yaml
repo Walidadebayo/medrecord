@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: permit-pdp
+    env: docker
+    plan: free
+    region: oregon
+    envVars:
+      - key: PDP_API_KEY
+        sync: false
+      - key: PDP_DEBUG
+        value: "True"
+    healthCheckPath: /
+    ports:
+      - port: 7000

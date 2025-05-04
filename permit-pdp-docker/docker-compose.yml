@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - PDP_API_KEY=${PERMIT_API_KEY}
+    depends_on:
+      - permit
+
+  permit:
+    image: permitio/pdp-v2:latest
+    ports:
+      - "7766:7000"
+    environment:
+      - PDP_DEBUG=True
+      - PDP_API_KEY=${PERMIT_API_KEY}
+    restart: always
+
+networks:
+  default:
+    driver: bridge

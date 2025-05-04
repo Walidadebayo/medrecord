@@ -3,9 +3,8 @@ import { getServerSession } from "@/lib/auth"
 import { getRecordById, updateRecord, deleteRecord } from "@/lib/data"
 import { checkAccess } from "@/lib/permit"
 
-export async function GET(request: NextRequest, paramsPromise: Promise<{ params: { id: string } }>) {
-  const { params } = await paramsPromise
-  const { id } = params
+export async function GET(request: NextRequest, {params}: { params: { id: string } }) {
+  const { id } = await params
   try {
     const session = await getServerSession()
 
@@ -41,9 +40,8 @@ export async function GET(request: NextRequest, paramsPromise: Promise<{ params:
   }
 }
 
-export async function PUT(request: NextRequest, paramsPromise: Promise<{ params: { id: string } }>) {
-  const { params } = await paramsPromise
-  const { id } = params
+export async function PUT(request: NextRequest, {params}: { params: { id: string } }) {
+  const { id } = await params
   try {
     const session = await getServerSession()
 
@@ -82,9 +80,8 @@ export async function PUT(request: NextRequest, paramsPromise: Promise<{ params:
   }
 }
 
-export async function DELETE(request: NextRequest, paramsPromise: Promise<{ params: { id: string } }>) {
-  const { params } = await paramsPromise
-  const { id } = params
+export async function DELETE({params}: { params: { id: string } }) {
+  const { id } = await params
   try {
     const session = await getServerSession()
 

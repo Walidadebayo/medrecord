@@ -1,6 +1,8 @@
-import type { MedicalRecord } from "@/lib/types"
-import RecordModel, { type IRecord } from "@/models/record"
-import dbConnect from "@/lib/db"
+import type { MedicalRecord } from "@/lib/types";
+import RecordModel, { type IRecord } from "@/models/record";
+import dbConnect from "@/lib/db";
+import { permit } from "./permit";
+import { AttributeType } from "permitio";
 
 // Convert MongoDB document to MedicalRecord type
 function convertToMedicalRecord(record: IRecord): MedicalRecord {
@@ -13,132 +15,137 @@ function convertToMedicalRecord(record: IRecord): MedicalRecord {
     files: record.files || [],
     created_at: record.created_at.toISOString(),
     updated_at: record.updated_at.toISOString(),
-  }
+  };
 }
 
 // Get all records
 export async function getAllRecords(): Promise<MedicalRecord[]> {
-  await dbConnect()
+  await dbConnect();
 
-  const records = await RecordModel.find().sort({ created_at: -1 })
+  const records = await RecordModel.find().sort({ created_at: -1 });
 
-  return records.map(convertToMedicalRecord)
+  return records.map(convertToMedicalRecord);
 }
 
 // Get records filtered by role
-export async function getRecordsByRole(role: string, userName: string): Promise<MedicalRecord[]> {
-  await dbConnect()
+export async function getRecordsByRole(
+  role: string,
+  userName: string
+): Promise<MedicalRecord[]> {
+  await dbConnect();
 
-  let query = {}
+  let query = {};
 
   switch (role) {
     case "admin":
       // Admin sees all records
-      break
+      break;
     case "doctor":
       // Doctor sees records where they are the assigned doctor
-      query = { doctor_name: userName }
-      break
+      query = { doctor_name: userName };
+      break;
     case "patient":
       // Patient sees records where they are the patient
-      query = { patient_name: userName }
-      break
+      query = { patient_name: userName };
+      break;
     default:
-      return []
+      return [];
   }
 
-  const records = await RecordModel.find(query).sort({ created_at: -1 })
+  const records = await RecordModel.find(query).sort({ created_at: -1 });
 
-  return records.map(convertToMedicalRecord)
+  return records.map(convertToMedicalRecord);
 }
 
 // Advanced search with filters
 export async function searchRecords(
   searchTerm: string,
   filters: {
-    role: string
-    userName: string
-    dateRange?: { start?: string; end?: string }
-    doctorName?: string
-    patientName?: string
-  },
+    role: string;
+    userName: string;
+    dateRange?: { start?: string; end?: string };
+    doctorName?: string;
+    patientName?: string;
+  }
 ): Promise<MedicalRecord[]> {
-  await dbConnect()
+  await dbConnect();
 
   // Base query based on role
-  const query: any = {}
+  const query: any = {};
 
   switch (filters.role) {
     case "admin":
       // Admin sees all records
-      break
+      break;
     case "doctor":
       // Doctor sees records where they are the assigned doctor
-      query.doctor_name = filters.userName
-      break
+      query.doctor_name = filters.userName;
+      break;
     case "patient":
       // Patient sees records where they are the patient
-      query.patient_name = filters.userName
-      break
+      query.patient_name = filters.userName;
+      break;
     default:
-      return []
+      return [];
   }
 
   // Add text search if provided
   if (searchTerm) {
-    query.$text = { $search: searchTerm }
+    query.$text = { $search: searchTerm };
   }
 
   // Add date range filter if provided
   if (filters.dateRange) {
-    query.created_at = {}
+    query.created_at = {};
 
     if (filters.dateRange.start) {
-      query.created_at.$gte = new Date(filters.dateRange.start)
+      query.created_at.$gte = new Date(filters.dateRange.start);
     }
 
     if (filters.dateRange.end) {
-      query.created_at.$lte = new Date(filters.dateRange.end)
+      query.created_at.$lte = new Date(filters.dateRange.end);
     }
   }
 
   // Add doctor filter if provided (for admin only)
   if (filters.role === "admin" && filters.doctorName) {
-    query.doctor_name = filters.doctorName
+    query.doctor_name = filters.doctorName;
   }
 
   // Add patient filter if provided (for admin and doctor)
   if (filters.role !== "patient" && filters.patientName) {
-    query.patient_name = filters.patientName
+    query.patient_name = filters.patientName;
   }
 
   // Execute query with sorting
-  const records = await RecordModel.find(query).sort({ created_at: -1 })
+  const records = await RecordModel.find(query).sort({ created_at: -1 });
 
-  return records.map(convertToMedicalRecord)
+  return records.map(convertToMedicalRecord);
 }
 
 // Get a single record by ID
 export async function getRecordById(id: string): Promise<MedicalRecord | null> {
-  await dbConnect()
+  await dbConnect();
 
   try {
-    const record = await RecordModel.findById(id)
+    const record = await RecordModel.findById(id);
 
     if (!record) {
-      return null
+      return null;
     }
 
-    return convertToMedicalRecord(record)
+    return convertToMedicalRecord(record);
   } catch (error) {
-    console.error("Error fetching record:", error)
-    return null
+    console.error("Error fetching record:", error);
+    return null;
   }
 }
 
 // Create a new record
-export async function createRecord(data: Partial<MedicalRecord>): Promise<MedicalRecord> {
-  await dbConnect()
+export async function createRecord(
+  data: Partial<MedicalRecord>
+): Promise<MedicalRecord> {
+  await dbConnect();
 
   const newRecord = await RecordModel.create({
     patient_name: data.patient_name,
@@ -146,14 +153,17 @@ export async function createRecord(data: Partial<MedicalRecord>): Promise<Medica
     diagnosis: data.diagnosis,
     notes: data.notes,
     files: data.files || [],
-  })
+  });
 
-  return convertToMedicalRecord(newRecord)
+  return convertToMedicalRecord(newRecord);
 }
 
 // Update an existing record
-export async function updateRecord(id: string, data: Partial<MedicalRecord>): Promise<MedicalRecord | null> {
-  await dbConnect()
+export async function updateRecord(
+  id: string,
+  data: Partial<MedicalRecord>
+): Promise<MedicalRecord | null> {
+  await dbConnect();
 
   try {
     const updatedRecord = await RecordModel.findByIdAndUpdate(
@@ -167,38 +177,75 @@ export async function updateRecord(id: string, data: Partial<MedicalRecord>): Pr
           ...(data.files && { files: data.files }),
         },
       },
-      { new: true },
-    )
+      { new: true }
+    );
 
     if (!updatedRecord) {
-      return null
+      return null;
     }
 
-    return convertToMedicalRecord(updatedRecord)
+    return convertToMedicalRecord(updatedRecord);
   } catch (error) {
-    console.error("Error updating record:", error)
-    return null
+    console.error("Error updating record:", error);
+    return null;
   }
 }
 
 // Delete a record
 export async function deleteRecord(id: string): Promise<boolean> {
-  await dbConnect()
+  await dbConnect();
 
   try {
-    const result = await RecordModel.findByIdAndDelete(id)
-    return !!result
+    const result = await RecordModel.findByIdAndDelete(id);
+    return !!result;
   } catch (error) {
-    console.error("Error deleting record:", error)
-    return false
+    console.error("Error deleting record:", error);
+    return false;
   }
 }
 
 // Initialize database with sample records if empty
 export async function initializeRecords() {
-  await dbConnect()
+  await dbConnect();
 
-  const count = await RecordModel.countDocuments()
+  const count = await RecordModel.countDocuments();
+
+  // const resourceDefinition = {
+  //   key: "medical_record",
+  //   name: "Medical Record",
+  //   description: "A patient’s medical record",
+  //   actions: {
+  //     read: { name: "Read", description: "Read the record" },
+  //     update: { name: "Update", description: "Update the record" },
+  //     delete: { name: "Delete", description: "Delete the record" },
+  //     create: { name: "Create", description: "Create a new record" },
+  //   },
+  //   attributes: {
+  //     doctor_name: {
+  //       type: AttributeType.String,
+  //       description: "Name of the assigned doctor",
+  //     },
+  //     patient_name: {
+  //       type: AttributeType.String,
+  //       description: "Name of the patient",
+  //     },
+  //   },
+  //   roles: {
+  //     admin: {
+  //       permissions: ["read", "update", "delete", "create"],
+  //     },
+  //     doctor: {
+  //       permissions: ["read", "update"],
+  //     },
+  //     patient: {
+  //       permissions: ["read"],
+  //     },
+  //   },
+  // };
+
+  // const response = await permit.api.createResource(resourceDefinition);
+
+  // console.log("Resource created:", response);
 
   if (count === 0) {
     // Create sample records
@@ -251,8 +298,6 @@ export async function initializeRecords() {
           "Patient reporting increased anxiety and occasional panic attacks. Started on sertraline 50mg daily. Referred to cognitive behavioral therapy. Follow-up in 4 weeks to assess medication response.",
         files: [],
       },
-    ])
-
-    console.log("Sample records created")
+    ]);
   }
 }

@@ -58,7 +58,8 @@ export default function RecordsTable({ records: initialRecords, userRole }: Reco
       if (filters.patientName) {
         params.append("patient", filters.patientName)
       }
-
+      console.log(params.toString());
+      
       const response = await fetch(`/api/records?${params.toString()}`)
 
       if (response.ok) {

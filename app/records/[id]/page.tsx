@@ -13,12 +13,12 @@ export const metadata: Metadata = {
 
 export default async function RecordDetailPage({ params }: { params: { id: string } }) {
   const session = await getServerSession()
-
+  const { id } = await params
   if (!session) {
     redirect("/login")
   }
 
-  const record = await getRecordById(params.id)
+  const record = await getRecordById(id)
 
   if (!record) {
     redirect("/dashboard")

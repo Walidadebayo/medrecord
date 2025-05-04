@@ -1,27 +1,32 @@
-import type { Metadata } from "next"
-import { redirect } from "next/navigation"
-import { getServerSession } from "@/lib/auth"
-import { getRecordById } from "@/lib/data"
-import DashboardHeader from "@/components/dashboard-header"
-import RecordForm from "@/components/record-form"
-import { checkAccess } from "@/lib/permit"
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { getServerSession } from "@/lib/auth";
+import { getRecordById } from "@/lib/data";
+import DashboardHeader from "@/components/dashboard-header";
+import RecordForm from "@/components/record-form";
+import { checkAccess } from "@/lib/permit";
 
 export const metadata: Metadata = {
   title: "Edit Record | MedRecord",
   description: "Edit medical record details",
-}
+};
 
-export default async function EditRecordPage({ params }: { params: { id: string } }) {
-  const session = await getServerSession()
+export default async function EditRecordPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const { id } = await params;
+  const session = await getServerSession();
 
   if (!session) {
-    redirect("/login")
+    redirect("/login");
   }
 
-  const record = await getRecordById(params.id)
+  const record = await getRecordById(id);
 
   if (!record) {
-    redirect("/dashboard")
+    redirect("/dashboard");
   }
 
   // Check if user has access to edit this record
@@ -34,10 +39,10 @@ export default async function EditRecordPage({ params }: { params: { id: string 
       patient_name: record.patient_name,
       doctor_name: record.doctor_name,
     },
-  })
+  });
 
   if (!hasAccess) {
-    redirect("/dashboard")
+    redirect("/dashboard");
   }
 
   return (
@@ -45,12 +50,16 @@ export default async function EditRecordPage({ params }: { params: { id: string 
       <DashboardHeader user={session.user} />
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edit Record</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-300">Update the medical record information.</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Edit Record
+          </h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-300">
+            Update the medical record information.
+          </p>
         </div>
 
         <RecordForm record={record} />
       </main>
     </div>
-  )
+  );
 }
