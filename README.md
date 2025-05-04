@@ -24,7 +24,7 @@ A full-stack medical records management application built with Next.js, MongoDB,
 
 Create a `.env.local` file in the root directory with the following variables:
 
-\`\`\`
+```
 # MongoDB
 MONGODB_URI=your_mongodb_connection_string
 
@@ -36,24 +36,24 @@ PERMIT_API_KEY=your_permit_api_key
 
 # Vercel Blob
 BLOB_READ_WRITE_TOKEN=your_vercel_blob_token
-\`\`\`
+```
 
 ### Installation
 
 1. Clone the repository
 2. Install dependencies:
 
-\`\`\`bash
+```bash
 npm install
-\`\`\`
+```
 
 3. Run the development server:
 
-\`\`\`bash
+```bash
 npm run dev
-\`\`\`
+```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+4. Open [http://localhost:2500](http://localhost:2500) in your browser
 
 ### Testing Different Roles
 
@@ -75,6 +75,30 @@ This application uses Permit.io for fine-grained role-based access control:
    - Resource type (`medical_record`)
    - Action (`read`, `create`, `update`, `delete`)
    - Resource attributes (patient name, doctor name)
+
+### Permit.io PDP Docker Setup
+
+This application uses a Permit.io Policy Decision Point (PDP) for enforcement, which can be run locally using Docker:
+
+1. **Run the PDP Container**:
+   ```bash
+   docker-compose up
+   ```
+   This will start the PDP container on port 7766 and the application container on port 3000.
+
+2. **Environment Configuration**:
+   - The application needs `PERMIT_API_KEY` in your `.env.local` file
+   - The PDP container uses this value for its required `PDP_API_KEY` environment variable
+
+3. **Troubleshooting**:
+   - If you see errors like `No API key specified. Please specify one with the PDP_API_KEY environment variable`, ensure your `.env.local` file contains a valid `PERMIT_API_KEY`
+   - The docker-compose.yml file will automatically map this value to the PDP container
+
+4. **Deployment Options**:
+   - For local development, use Docker Compose
+   - For production, the PDP can be deployed to services like Render using the provided `render.yaml` configuration
+
+For more information about Permit.io's PDP, visit the [official documentation](https://docs.permit.io/).
 
 ## Deployment
 

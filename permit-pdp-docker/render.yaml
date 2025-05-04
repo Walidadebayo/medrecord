@@ -7,6 +7,8 @@ services:
     envVars:
       - key: PERMIT_API_KEY
         sync: false
+      - key: PDP_API_KEY
+        fromKey: PERMIT_API_KEY
       - key: PDP_DEBUG
         value: "True"
     healthCheckPath: /
