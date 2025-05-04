@@ -64,3 +64,35 @@ Contributions are welcome! Please open an issue or submit a pull request for any
 ## License
 
 This project is licensed under the MIT License. See the LICENSE file for more details.
+
+# Permit.io PDP Docker Setup
+
+## Configuration
+
+1. Create a `.env` file in this directory with your Permit.io API key:
+
+```
+PERMIT_API_KEY=your_permit_api_key_here
+```
+
+2. Make sure to replace `your_permit_api_key_here` with your actual Permit.io API key.
+
+## Running locally
+
+```bash
+docker-compose up
+```
+
+The PDP will be accessible at http://localhost:7766
+
+## Troubleshooting
+
+If you see errors like:
+```
+CRITICAL | No API key specified. Please specify one with the PDP_API_KEY environment variable.
+```
+
+Make sure:
+1. Your `.env` file exists in the same directory as your docker-compose.yml
+2. The `.env` file contains the PERMIT_API_KEY variable with a valid API key
+3. The docker-compose command is being run from the same directory as the .env file

@@ -80,21 +80,28 @@ This application uses Permit.io for fine-grained role-based access control:
 
 This application uses a Permit.io Policy Decision Point (PDP) for enforcement, which can be run locally using Docker:
 
-1. **Run the PDP Container**:
+1. **Set up API Key**:
+   - Navigate to the `permit-pdp-docker` directory
+   - Create a `.env` file with your Permit API key:
+     ```
+     PDP_API_KEY=your_permit_api_key_here
+     ```
+
+2. **Run the PDP Container**:
    ```bash
+   cd permit-pdp-docker
    docker-compose up
    ```
-   This will start the PDP container on port 7766 and the application container on port 3000.
+   This will start the PDP container on port 7766.
 
-2. **Environment Configuration**:
-   - The application needs `PERMIT_API_KEY` in your `.env.local` file
-   - The PDP container uses this value for its required `PDP_API_KEY` environment variable
+3. **Verify PDP is Running**:
+   Open a browser and navigate to http://localhost:7766
 
-3. **Troubleshooting**:
-   - If you see errors like `No API key specified. Please specify one with the PDP_API_KEY environment variable`, ensure your `.env.local` file contains a valid `PERMIT_API_KEY`
-   - The docker-compose.yml file will automatically map this value to the PDP container
+4. **Troubleshooting**:
+   - If the PDP fails to start with API key errors, ensure your `.env` file exists and contains a valid `PDP_API_KEY`
+   - Make sure the docker-compose command is run from the directory containing both the docker-compose.yml and .env files
 
-4. **Deployment Options**:
+5. **Deployment Options**:
    - For local development, use Docker Compose
    - For production, the PDP can be deployed to services like Render using the provided `render.yaml` configuration
 
