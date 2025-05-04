@@ -16,20 +16,23 @@ export interface IRecord extends Document {
   updated_at: Date;
 }
 
+const FileSchema = new Schema(
+  {
+    name: { type: String, required: true },
+    url: { type: String, required: true },
+    contentType: { type: String, required: true },
+    size: { type: Number, required: true },
+  },
+  { _id: false } 
+);
+
 const RecordSchema = new Schema<IRecord>(
   {
     patient_name: { type: String, required: true, index: true },
     doctor_name: { type: String, required: true, index: true },
     diagnosis: { type: String, required: true, index: true },
     notes: { type: String, required: true },
-    files: [
-      {
-        name: { type: String, required: true },
-        url: { type: String, required: true },
-        contentType: { type: String, required: true },
-        size: { type: Number, required: true },
-      },
-    ],
+    files: [FileSchema],
   },
   { timestamps: { createdAt: "created_at", updatedAt: "updated_at" } }
 );

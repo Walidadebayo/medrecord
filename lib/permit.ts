@@ -16,9 +16,7 @@ interface CheckAccessParams {
   resourceAttributes?: Record<string, any>;
 }
 
-export async function createPermitUser(
-  user: User
-): Promise<void> {
+export async function createPermitUser(user: User): Promise<void> {
   try {
     const role =
       user.role === "doctor"
@@ -43,7 +41,6 @@ export async function createPermitUser(
       ],
     });
     console.log("User created in Permit.io:", y);
-    
   } catch (error) {
     console.error("Error creating user in Permit.io:", error);
   }
@@ -70,12 +67,22 @@ export async function checkAccess({
     };
 
     // Check permission using Permit
-    const permitted = await permit.check(userContext, action, {
+    let permitted = await permit.check(userContext, action, {
       type: resource,
       key: resourceId,
       attributes: resourceAttributes,
     });
-    console.log("Permit.io check result:", permitted);
+
+    if (!permitted) {
+      // fallback to role-based access control
+      permitted = fallbackRoleCheck(
+        user.role,
+        resource,
+        action,
+        resourceAttributes,
+        user.name
+      );
+    }
 
     return permitted;
   } catch (error) {

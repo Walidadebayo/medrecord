@@ -1,18 +1,25 @@
-import type { MedicalRecord } from "@/lib/types";
+import type { MedicalRecord, User } from "@/lib/types";
 import RecordModel, { type IRecord } from "@/models/record";
 import dbConnect from "@/lib/db";
-import { permit } from "./permit";
+import { checkAccess, permit } from "./permit";
 import { AttributeType } from "permitio";
+import { getServerSession } from "./auth";
 
 // Convert MongoDB document to MedicalRecord type
-function convertToMedicalRecord(record: IRecord): MedicalRecord {
+function convertToMedicalRecord(
+  record: IRecord & {
+    isPermitted: boolean;
+  }
+): MedicalRecord {
+
   return {
     id: (record._id as { toString(): string }).toString(),
     patient_name: record.patient_name,
     doctor_name: record.doctor_name,
     diagnosis: record.diagnosis,
     notes: record.notes,
-    files: record.files || [],
+    files: JSON.parse(JSON.stringify(record.files)),
+    isPermitted: record.isPermitted || false,
     created_at: record.created_at.toISOString(),
     updated_at: record.updated_at.toISOString(),
   };
@@ -28,31 +35,40 @@ export async function getAllRecords(): Promise<MedicalRecord[]> {
 }
 
 // Get records filtered by role
-export async function getRecordsByRole(
-  role: string,
-  userName: string
-): Promise<MedicalRecord[]> {
+export async function getRecordsByRole(user: User): Promise<MedicalRecord[]> {
   await dbConnect();
 
   let query = {};
 
-  switch (role) {
+  switch (user.role) {
     case "admin":
       // Admin sees all records
       break;
     case "doctor":
       // Doctor sees records where they are the assigned doctor
-      query = { doctor_name: userName };
+      query = { doctor_name: user.name };
       break;
     case "patient":
       // Patient sees records where they are the patient
-      query = { patient_name: userName };
+      query = { patient_name: user.name };
       break;
     default:
       return [];
   }
 
   const records = await RecordModel.find(query).sort({ created_at: -1 });
+  for (const record of records) {
+    record.isPermitted = await checkAccess({
+      user: user,
+      resource: "medical_record",
+      action: "update",
+      resourceId: record.id,
+      resourceAttributes: {
+        patient_name: record.patient_name,
+        doctor_name: record.doctor_name,
+      },
+    });
+  }
 
   return records.map(convertToMedicalRecord);
 }
@@ -61,8 +77,7 @@ export async function getRecordsByRole(
 export async function searchRecords(
   searchTerm: string,
   filters: {
-    role: string;
-    userName: string;
+    user: User;
     dateRange?: { start?: string; end?: string };
     doctorName?: string;
     patientName?: string;
@@ -73,17 +88,17 @@ export async function searchRecords(
   // Base query based on role
   const query: any = {};
 
-  switch (filters.role) {
+  switch (filters.user.role) {
     case "admin":
       // Admin sees all records
       break;
     case "doctor":
       // Doctor sees records where they are the assigned doctor
-      query.doctor_name = filters.userName;
+      query.doctor_name = filters.user.name;
       break;
     case "patient":
       // Patient sees records where they are the patient
-      query.patient_name = filters.userName;
+      query.patient_name = filters.user.name;
       break;
     default:
       return [];
@@ -108,18 +123,29 @@ export async function searchRecords(
   }
 
   // Add doctor filter if provided (for admin only)
-  if (filters.role === "admin" && filters.doctorName) {
+  if (filters.user.role === "admin" && filters.doctorName) {
     query.doctor_name = filters.doctorName;
   }
 
   // Add patient filter if provided (for admin and doctor)
-  if (filters.role !== "patient" && filters.patientName) {
+  if (filters.user.role !== "patient" && filters.patientName) {
     query.patient_name = filters.patientName;
   }
 
   // Execute query with sorting
   const records = await RecordModel.find(query).sort({ created_at: -1 });
-
+  for (const record of records) {
+    record.isPermitted = await checkAccess({
+      user: filters.user,
+      resource: "medical_record",
+      action: "update",
+      resourceId: record.id,
+      resourceAttributes: {
+        patient_name: record.patient_name,
+        doctor_name: record.doctor_name,
+      },
+    });
+  }
   return records.map(convertToMedicalRecord);
 }
 
@@ -127,12 +153,24 @@ export async function searchRecords(
 export async function getRecordById(id: string): Promise<MedicalRecord | null> {
   await dbConnect();
 
+  const session = await getServerSession();
+  if (!session) {
+    return null;
+  }
+
   try {
     const record = await RecordModel.findById(id);
 
     if (!record) {
       return null;
     }
+    // Check if user has access to this record
+    record.isPermitted = await checkAccess({
+      user: session.user,
+      resource: "medical_record",
+      action: "read",
+      resourceId: record.id,
+    });
 
     return convertToMedicalRecord(record);
   } catch (error) {
@@ -209,43 +247,6 @@ export async function initializeRecords() {
   await dbConnect();
 
   const count = await RecordModel.countDocuments();
-
-  // const resourceDefinition = {
-  //   key: "medical_record",
-  //   name: "Medical Record",
-  //   description: "A patient’s medical record",
-  //   actions: {
-  //     read: { name: "Read", description: "Read the record" },
-  //     update: { name: "Update", description: "Update the record" },
-  //     delete: { name: "Delete", description: "Delete the record" },
-  //     create: { name: "Create", description: "Create a new record" },
-  //   },
-  //   attributes: {
-  //     doctor_name: {
-  //       type: AttributeType.String,
-  //       description: "Name of the assigned doctor",
-  //     },
-  //     patient_name: {
-  //       type: AttributeType.String,
-  //       description: "Name of the patient",
-  //     },
-  //   },
-  //   roles: {
-  //     admin: {
-  //       permissions: ["read", "update", "delete", "create"],
-  //     },
-  //     doctor: {
-  //       permissions: ["read", "update"],
-  //     },
-  //     patient: {
-  //       permissions: ["read"],
-  //     },
-  //   },
-  // };
-
-  // const response = await permit.api.createResource(resourceDefinition);
-
-  // console.log("Resource created:", response);
 
   if (count === 0) {
     // Create sample records

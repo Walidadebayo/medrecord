@@ -83,10 +83,10 @@ export async function initializeUsers() {
     await dbConnect();
 
     const count = await UserModel.countDocuments();
-    
+
     if (count === 0) {
       // Create default users
-      const createdUsers = await UserModel.create([
+      await UserModel.create([
         {
           username: "admin",
           password: "2025DEVChallenge",

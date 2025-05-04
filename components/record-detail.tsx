@@ -1,13 +1,19 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Edit, ArrowLeft, FileText, ImageIcon, FileIcon, Download } from "lucide-react"
+import { Edit, ArrowLeft, FileText, ImageIcon, FileIcon, Download, Eye } from "lucide-react"
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import type { MedicalRecord } from "@/lib/types"
 import { formatDate } from "@/lib/utils"
-import { usePermit } from "@/lib/permit-provider"
 
 interface RecordDetailProps {
   record: MedicalRecord
@@ -15,8 +21,9 @@ interface RecordDetailProps {
 }
 
 export default function RecordDetail({ record, userRole }: RecordDetailProps) {
-  const { checkPermission } = usePermit()
-  const canEdit = checkPermission("medical_record", "update", record.id)
+  // State for dialog
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
+  const [viewingFile, setViewingFile] = useState<{name: string, url: string, contentType: string} | null>(null)
 
   const getFileIcon = (contentType: string) => {
     if (contentType.startsWith("image/")) {
@@ -34,6 +41,52 @@ export default function RecordDetail({ record, userRole }: RecordDetailProps) {
     else return (bytes / 1048576).toFixed(1) + " MB"
   }
 
+  const handleViewFile = (file: {name: string, url: string, contentType: string}) => {
+    setViewingFile(file)
+    setIsViewDialogOpen(true)
+  }
+
+  const renderFileContent = () => {
+    if (!viewingFile) return null
+
+    if (viewingFile.contentType.startsWith('image/')) {
+      return (
+        <div className="flex justify-center">
+          <img 
+            src={viewingFile.url} 
+            alt={viewingFile.name} 
+            className="max-h-[70vh] object-contain"
+          />
+        </div>
+      )
+    } else if (viewingFile.contentType === 'application/pdf') {
+      return (
+        <iframe 
+          src={`${viewingFile.url}#toolbar=0`}
+          className="w-full h-[70vh]" 
+          title={viewingFile.name}
+        />
+      )
+    } else {
+      return (
+        <div className="flex flex-col items-center justify-center p-8 text-center">
+          <FileIcon className="h-16 w-16 text-gray-400 mb-4" />
+          <p>This file type cannot be previewed.</p>
+          <a
+            href={viewingFile.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            download={viewingFile.name}
+            className="mt-4 flex items-center text-blue-600 hover:text-blue-800"
+          >
+            <Download className="h-4 w-4 mr-1" />
+            <span>Download file</span>
+          </a>
+        </div>
+      )
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -44,7 +97,7 @@ export default function RecordDetail({ record, userRole }: RecordDetailProps) {
           </Link>
         </Button>
 
-        {canEdit && (
+        {record.isPermitted && (
           <Button
             asChild
             className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
@@ -101,15 +154,27 @@ export default function RecordDetail({ record, userRole }: RecordDetailProps) {
                         <span className="ml-2 text-sm">{file.name}</span>
                         <span className="ml-2 text-xs text-gray-500">({formatFileSize(file.size)})</span>
                       </div>
-                      <a
-                        href={file.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center text-blue-600 hover:text-blue-800"
-                      >
-                        <Download className="h-4 w-4 mr-1" />
-                        <span className="text-sm">Download</span>
-                      </a>
+                      <div className="flex items-center space-x-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewFile(file)}
+                          className="flex items-center text-blue-600 border-blue-200 hover:text-blue-800"
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          <span className="text-sm">View</span>
+                        </Button>
+                        <a
+                          href={file.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download={file.name}
+                          className="flex items-center text-blue-600 hover:text-blue-800"
+                        >
+                          <Download className="h-4 w-4 mr-1" />
+                          <span className="text-sm">Download</span>
+                        </a>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -121,6 +186,16 @@ export default function RecordDetail({ record, userRole }: RecordDetailProps) {
           <p className="text-sm text-gray-500 dark:text-gray-400">Record ID: {record.id}</p>
         </CardFooter>
       </Card>
+
+      {/* File Viewer Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="sm:max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>{viewingFile?.name}</DialogTitle>
+          </DialogHeader>
+          {renderFileContent()}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -17,7 +17,7 @@ export default async function DashboardPage() {
     redirect("/login")
   }
 
-  const records = await getRecordsByRole(session.user.role, session.user.name)
+  const records = await getRecordsByRole(session.user)
 
   return (
     <div className="min-h-screen">

@@ -19,6 +19,7 @@ export interface MedicalRecord {
   diagnosis: string
   notes: string
   files: FileAttachment[]
+  isPermitted?: boolean
   created_at: string
   updated_at?: string
 }

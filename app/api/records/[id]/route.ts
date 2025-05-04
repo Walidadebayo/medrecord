@@ -1,21 +1,24 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "@/lib/auth"
-import { getRecordById, updateRecord, deleteRecord } from "@/lib/data"
-import { checkAccess } from "@/lib/permit"
+import { type NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "@/lib/auth";
+import { getRecordById, updateRecord, deleteRecord } from "@/lib/data";
+import { checkAccess } from "@/lib/permit";
 
-export async function GET(request: NextRequest, {params}: { params: { id: string } }) {
-  const { id } = await params
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id } = await params;
   try {
-    const session = await getServerSession()
+    const session = await getServerSession();
 
     if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const record = await getRecordById(id)
+    const record = await getRecordById(id);
 
     if (!record) {
-      return NextResponse.json({ error: "Record not found" }, { status: 404 })
+      return NextResponse.json({ error: "Record not found" }, { status: 404 });
     }
 
     // Check if user has access to this record
@@ -28,31 +31,37 @@ export async function GET(request: NextRequest, {params}: { params: { id: string
         patient_name: record.patient_name,
         doctor_name: record.doctor_name,
       },
-    })
+    });
 
     if (!hasAccess) {
-      return NextResponse.json({ error: "Permission denied" }, { status: 403 })
+      return NextResponse.json({ error: "Permission denied" }, { status: 403 });
     }
 
-    return NextResponse.json({ record })
+    return NextResponse.json({ record });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch record" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Failed to fetch record" },
+      { status: 500 }
+    );
   }
 }
 
-export async function PUT(request: NextRequest, {params}: { params: { id: string } }) {
-  const { id } = await params
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id } = await params;
   try {
-    const session = await getServerSession()
+    const session = await getServerSession();
 
     if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const record = await getRecordById(id)
+    const record = await getRecordById(id);
 
     if (!record) {
-      return NextResponse.json({ error: "Record not found" }, { status: 404 })
+      return NextResponse.json({ error: "Record not found" }, { status: 404 });
     }
 
     // Check if user has access to update this record
@@ -65,34 +74,40 @@ export async function PUT(request: NextRequest, {params}: { params: { id: string
         patient_name: record.patient_name,
         doctor_name: record.doctor_name,
       },
-    })
+    });
 
     if (!hasAccess) {
-      return NextResponse.json({ error: "Permission denied" }, { status: 403 })
+      return NextResponse.json({ error: "Permission denied" }, { status: 403 });
     }
 
-    const body = await request.json()
-    const updatedRecord = await updateRecord(id, body)
+    const body = await request.json();
+    const updatedRecord = await updateRecord(id, body);
 
-    return NextResponse.json({ record: updatedRecord })
+    return NextResponse.json({ record: updatedRecord });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to update record" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Failed to update record" },
+      { status: 500 }
+    );
   }
 }
 
-export async function DELETE({params}: { params: { id: string } }) {
-  const { id } = await params
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id } = await params;
   try {
-    const session = await getServerSession()
+    const session = await getServerSession();
 
     if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const record = await getRecordById(id)
+    const record = await getRecordById(id);
 
     if (!record) {
-      return NextResponse.json({ error: "Record not found" }, { status: 404 })
+      return NextResponse.json({ error: "Record not found" }, { status: 404 });
     }
 
     // Check if user has access to delete this record
@@ -105,16 +120,19 @@ export async function DELETE({params}: { params: { id: string } }) {
         patient_name: record.patient_name,
         doctor_name: record.doctor_name,
       },
-    })
+    });
 
     if (!hasAccess) {
-      return NextResponse.json({ error: "Permission denied" }, { status: 403 })
+      return NextResponse.json({ error: "Permission denied" }, { status: 403 });
     }
 
-    await deleteRecord(id)
+    await deleteRecord(id);
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to delete record" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Failed to delete record" },
+      { status: 500 }
+    );
   }
 }

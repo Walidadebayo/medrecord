@@ -20,8 +20,7 @@ export async function GET(request: NextRequest) {
 
     // Use advanced search with filters
     const records = await searchRecords(searchTerm, {
-      role: session.user.role,
-      userName: session.user.name,
+      user: session.user,
       dateRange: startDate || endDate ? { start: startDate, end: endDate } : undefined,
       doctorName,
       patientName,
