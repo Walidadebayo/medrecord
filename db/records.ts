@@ -10,6 +10,7 @@ export const records: MedicalRecord[] = [
     notes:
       "Patient presents with elevated blood pressure readings over the past 3 months. Prescribed lisinopril 10mg daily. Follow-up in 4 weeks.",
     created_at: "2023-11-15T09:30:00Z",
+    files:[],
   },
   {
     id: "rec_2",
@@ -19,6 +20,7 @@ export const records: MedicalRecord[] = [
     notes:
       "Initial diagnosis. HbA1c: 7.8%. Started on metformin 500mg twice daily. Dietary and exercise counseling provided. Schedule follow-up in 3 months.",
     created_at: "2023-12-03T14:15:00Z",
+    files:[],
   },
   {
     id: "rec_3",
@@ -28,6 +30,7 @@ export const records: MedicalRecord[] = [
     notes:
       "Patient experiencing nasal congestion, sneezing, and itchy eyes. Prescribed loratadine 10mg daily as needed. Recommended avoiding known allergens.",
     created_at: "2024-01-20T11:45:00Z",
+    files:[],
   },
   {
     id: "rec_4",
@@ -37,6 +40,7 @@ export const records: MedicalRecord[] = [
     notes:
       "Recurring migraines with aura, 2-3 times per month. Prescribed sumatriptan for acute attacks and discussed preventive options. Keeping headache diary.",
     created_at: "2024-02-08T16:20:00Z",
+    files:[],
   },
   {
     id: "rec_5",
@@ -46,6 +50,7 @@ export const records: MedicalRecord[] = [
     notes:
       "Chronic lower back pain exacerbated by prolonged sitting. Physical therapy referral made. Prescribed naproxen for pain management. Discussed ergonomic improvements for workspace.",
     created_at: "2024-03-12T10:00:00Z",
+    files:[],
   },
   {
     id: "rec_6",
@@ -55,5 +60,6 @@ export const records: MedicalRecord[] = [
     notes:
       "Patient reporting increased anxiety and occasional panic attacks. Started on sertraline 50mg daily. Referred to cognitive behavioral therapy. Follow-up in 4 weeks to assess medication response.",
     created_at: "2024-04-05T13:30:00Z",
+    files:[],
   },
 ]

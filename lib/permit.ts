@@ -3,7 +3,8 @@ import type { User } from "@/lib/types"
 
 // Initialize Permit SDK
 const permit = new Permit({
-  pdp: "https://cloudpdp.api.permit.io",
+  // pdp: "https://cloudpdp.api.permit.io",
+  pdp:"http://localhost:7766",
   token: process.env.PERMIT_API_KEY || "permit_api_key",
 })
 

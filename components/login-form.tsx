@@ -89,14 +89,22 @@ export default function LoginForm() {
         </form>
       </CardContent>
       <CardFooter className="flex flex-col space-y-4 border-t px-6 py-4 bg-gray-50 rounded-b-lg">
-        <div className="text-sm text-gray-600">
-          <p>Demo Credentials:</p>
-          <p>
-            Admin: <span className="font-mono">admin</span> / <span className="font-mono">2025DEVChallenge</span>
-          </p>
-          <p>
-            User: <span className="font-mono">newuser</span> / <span className="font-mono">2025DEVChallenge</span>
-          </p>
+        <div className="text-sm text-gray-600 space-y-2">
+          <p className="font-semibold">Demo Credentials:</p>
+          <div>
+            <p className="font-medium text-blue-600">Admin:</p>
+            <p><span className="font-mono">admin</span> / <span className="font-mono">2025DEVChallenge</span></p>
+          </div>
+          <div>
+            <p className="font-medium text-green-600">Doctors:</p>
+            <p><span className="font-mono">drjohnson</span> / <span className="font-mono">2025DEVChallenge</span></p>
+            <p><span className="font-mono">drwilliams</span> / <span className="font-mono">2025DEVChallenge</span></p>
+          </div>
+          <div>
+            <p className="font-medium text-purple-600">Patients:</p>
+            <p><span className="font-mono">jsmith</span> / <span className="font-mono">2025DEVChallenge</span></p>
+            <p><span className="font-mono">newuser</span> / <span className="font-mono">2025DEVChallenge</span></p>
+          </div>
         </div>
       </CardFooter>
     </Card>
