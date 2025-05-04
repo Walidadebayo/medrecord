@@ -5,7 +5,7 @@ services:
     plan: free
     region: oregon
     envVars:
-      - key: PDP_API_KEY
+      - key: PERMIT_API_KEY
         sync: false
       - key: PDP_DEBUG
         value: "True"
